@@ -1,5 +1,7 @@
 <script>
 
+document.addEventListener("DOMContentLoaded", () => {
+
 const playlists = {
     calm: [
         "Lifted.mp3",
@@ -26,14 +28,12 @@ const player = document.getElementById("player");
 let nextAudio = new Audio();
 let fading = false;
 
-// 🔥 Keep track of user volume
 let userVolume = 1;
 
 player.addEventListener("volumechange", () => {
     userVolume = player.volume;
 });
 
-// 🔥 Play track
 function playTrack() {
     const src = "./" + currentList + "/" + playlists[currentList][currentTrack];
     player.src = src;
@@ -43,14 +43,12 @@ function playTrack() {
     preloadNext();
 }
 
-// 🔥 Preload next
 function preloadNext() {
     let nextIndex = (currentTrack + 1) % playlists[currentList].length;
     nextAudio = new Audio("./" + currentList + "/" + playlists[currentList][nextIndex]);
     nextAudio.volume = 0;
 }
 
-// 🔥 Crossfade
 player.addEventListener("timeupdate", () => {
     if (!fading && player.duration - player.currentTime < 3) {
         startCrossfade();
@@ -68,10 +66,7 @@ function startCrossfade() {
     let interval = setInterval(() => {
         fade += 0.05;
 
-        // Fade OUT current
         player.volume = userVolume * (1 - fade);
-
-        // Fade IN next
         nextAudio.volume = userVolume * fade;
 
         if (fade >= 1) {
@@ -79,7 +74,6 @@ function startCrossfade() {
 
             player.pause();
 
-            // Switch cleanly
             player.src = nextAudio.src;
             player.volume = userVolume;
             player.play();
@@ -92,7 +86,6 @@ function startCrossfade() {
     }, 200);
 }
 
-// Mode switch
 function setMode(mode) {
     currentList = mode;
     currentTrack = 0;
@@ -102,7 +95,8 @@ function setMode(mode) {
     playTrack();
 }
 
-// Start
 playTrack();
+
+});
 
 </script>
