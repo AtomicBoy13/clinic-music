@@ -1,51 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>RDP Ambient Sounds</title>
-
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #121212;
-    color: white;
-    text-align: center;
-}
-
-h1 {
-    padding: 20px;
-}
-
-button {
-    background: #1db954;
-    border: none;
-    color: white;
-    padding: 15px 25px;
-    margin: 10px;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-audio {
-    margin-top: 20px;
-    width: 80%;
-}
-</style>
-</head>
-
-<body>
-
-<h1>🦷 RDP Ambient Sounds</h1>
-
-<button onclick="setMode('calm')">🦷 Waiting Room</button>
-<button onclick="setMode('neutral')">🛠 Treatment</button>
-<button onclick="setMode('uplift')">☕ Staff</button>
-
-<br><br>
-
-<audio id="player" controls autoplay></audio>
-
 <script>
 
 const playlists = {
@@ -74,30 +26,33 @@ const player = document.getElementById("player");
 let nextAudio = new Audio();
 let fading = false;
 
-// Sync volume with UI
-function syncVolume() {
-    nextAudio.volume = player.volume;
-}
+// 🔥 Keep track of user volume
+let userVolume = 1;
 
-// 🔥 Play current track
+player.addEventListener("volumechange", () => {
+    userVolume = player.volume;
+});
+
+// 🔥 Play track
 function playTrack() {
     const src = "./" + currentList + "/" + playlists[currentList][currentTrack];
     player.src = src;
+    player.volume = userVolume;
     player.play();
 
     preloadNext();
 }
 
-// 🔥 Preload next track
+// 🔥 Preload next
 function preloadNext() {
     let nextIndex = (currentTrack + 1) % playlists[currentList].length;
-    nextAudio.src = "./" + currentList + "/" + playlists[currentList][nextIndex];
+    nextAudio = new Audio("./" + currentList + "/" + playlists[currentList][nextIndex]);
     nextAudio.volume = 0;
 }
 
 // 🔥 Crossfade
 player.addEventListener("timeupdate", () => {
-    if (player.duration - player.currentTime < 3 && !fading) {
+    if (!fading && player.duration - player.currentTime < 3) {
         startCrossfade();
     }
 });
@@ -108,18 +63,25 @@ function startCrossfade() {
     nextAudio.currentTime = 0;
     nextAudio.play();
 
-    let fadeInterval = setInterval(() => {
-        player.volume -= 0.05;
-        nextAudio.volume += 0.05;
+    let fade = 0;
 
-        if (player.volume <= 0) {
-            clearInterval(fadeInterval);
+    let interval = setInterval(() => {
+        fade += 0.05;
+
+        // Fade OUT current
+        player.volume = userVolume * (1 - fade);
+
+        // Fade IN next
+        nextAudio.volume = userVolume * fade;
+
+        if (fade >= 1) {
+            clearInterval(interval);
 
             player.pause();
 
-            // Switch to next
+            // Switch cleanly
             player.src = nextAudio.src;
-            player.volume = 1;
+            player.volume = userVolume;
             player.play();
 
             currentTrack = (currentTrack + 1) % playlists[currentList].length;
@@ -130,18 +92,13 @@ function startCrossfade() {
     }, 200);
 }
 
-// 🔥 Keep volume in sync
-player.addEventListener("volumechange", syncVolume);
-
-// Mode switching
+// Mode switch
 function setMode(mode) {
     currentList = mode;
     currentTrack = 0;
     fading = false;
 
     nextAudio.pause();
-    nextAudio = new Audio();
-
     playTrack();
 }
 
@@ -149,5 +106,3 @@ function setMode(mode) {
 playTrack();
 
 </script>
-</body>
-</html>
