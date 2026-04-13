@@ -27,39 +27,49 @@ const player = document.getElementById("player");
 
 let nextAudio = new Audio();
 let fading = false;
-
 let userVolume = 1;
 
+// Track volume properly
 player.addEventListener("volumechange", () => {
     userVolume = player.volume;
 });
 
+// Play track
 function playTrack() {
     const src = "./" + currentList + "/" + playlists[currentList][currentTrack];
     player.src = src;
     player.volume = userVolume;
-    player.play();
+
+    player.play().catch(() => {}); // avoids autoplay crash
 
     preloadNext();
 }
 
+// Preload next
 function preloadNext() {
     let nextIndex = (currentTrack + 1) % playlists[currentList].length;
     nextAudio = new Audio("./" + currentList + "/" + playlists[currentList][nextIndex]);
     nextAudio.volume = 0;
 }
 
+// SAFE crossfade trigger
 player.addEventListener("timeupdate", () => {
-    if (!fading && player.duration - player.currentTime < 3) {
+    if (
+        !fading &&
+        player.duration &&
+        !isNaN(player.duration) &&
+        player.duration - player.currentTime < 3
+    ) {
         startCrossfade();
     }
 });
 
+// Crossfade
 function startCrossfade() {
     fading = true;
 
     nextAudio.currentTime = 0;
-    nextAudio.play();
+    nextAudio.play().catch(() => {});
 
     let fade = 0;
 
@@ -76,7 +86,7 @@ function startCrossfade() {
 
             player.src = nextAudio.src;
             player.volume = userVolume;
-            player.play();
+            player.play().catch(() => {});
 
             currentTrack = (currentTrack + 1) % playlists[currentList].length;
 
@@ -86,6 +96,7 @@ function startCrossfade() {
     }, 200);
 }
 
+// Mode switch
 function setMode(mode) {
     currentList = mode;
     currentTrack = 0;
@@ -95,6 +106,7 @@ function setMode(mode) {
     playTrack();
 }
 
+// Start
 playTrack();
 
 });
