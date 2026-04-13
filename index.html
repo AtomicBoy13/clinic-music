@@ -105,7 +105,9 @@ player.addEventListener("timeupdate", () => {
         !isNaN(player.duration) &&
         player.duration - player.currentTime < 3
     ) {
-        startCrossfade();
+       if (!nextAudio.src) return;
+
+startCrossfade();
     }
 });
 
@@ -118,7 +120,7 @@ function startCrossfade() {
     let fade = 0;
 
     let interval = setInterval(() => {
-        fade = Math.min(1, fade + 0.05);
+        fade = Math.min(1, fade + 0.03);
 
         const currentVol = Math.max(0, Math.min(1, userVolume * (1 - fade)));
 const nextVol = Math.max(0, Math.min(1, userVolume * fade));
@@ -129,11 +131,16 @@ nextAudio.volume = nextVol;
         if (fade >= 1) {
             clearInterval(interval);
 
-            player.pause();
+           player.pause();
 
-            player.src = nextAudio.src;
-            player.volume = userVolume;
-            player.play().catch(() => {});
+// 🔥 DO NOT restart the track — continue it
+player.src = nextAudio.src;
+player.currentTime = nextAudio.currentTime;
+
+// restore proper volume
+player.volume = userVolume;
+
+player.play().catch(() => {});
 
             currentTrack = (currentTrack + 1) % playlists[currentList].length;
 
