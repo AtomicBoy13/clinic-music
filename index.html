@@ -69,54 +69,58 @@ const playlists = {
 let currentList = "calm";
 let currentTrack = 0;
 
-let currentAudio = new Audio();
+const player = document.getElementById("player");
+
 let nextAudio = new Audio();
+let fading = false;
 
-currentAudio.volume = 1;
-nextAudio.volume = 0;
+// Sync volume with UI
+function syncVolume() {
+    nextAudio.volume = player.volume;
+}
 
+// 🔥 Play current track
 function playTrack() {
     const src = "./" + currentList + "/" + playlists[currentList][currentTrack];
-    currentAudio.src = src;
-    currentAudio.play();
+    player.src = src;
+    player.play();
 
     preloadNext();
 }
 
+// 🔥 Preload next track
 function preloadNext() {
     let nextIndex = (currentTrack + 1) % playlists[currentList].length;
     nextAudio.src = "./" + currentList + "/" + playlists[currentList][nextIndex];
+    nextAudio.volume = 0;
 }
 
-// 🔥 Crossfade before ending
-currentAudio.addEventListener("timeupdate", () => {
-    if (currentAudio.duration - currentAudio.currentTime < 3) {
+// 🔥 Crossfade
+player.addEventListener("timeupdate", () => {
+    if (player.duration - player.currentTime < 3 && !fading) {
         startCrossfade();
     }
 });
 
-let fading = false;
-
 function startCrossfade() {
-    if (fading) return;
     fading = true;
 
     nextAudio.currentTime = 0;
     nextAudio.play();
 
     let fadeInterval = setInterval(() => {
-        currentAudio.volume -= 0.05;
+        player.volume -= 0.05;
         nextAudio.volume += 0.05;
 
-        if (currentAudio.volume <= 0) {
+        if (player.volume <= 0) {
             clearInterval(fadeInterval);
 
-            currentAudio.pause();
+            player.pause();
 
-            // Swap players
-            currentAudio = nextAudio;
-            nextAudio = new Audio();
-            nextAudio.volume = 0;
+            // Switch to next
+            player.src = nextAudio.src;
+            player.volume = 1;
+            player.play();
 
             currentTrack = (currentTrack + 1) % playlists[currentList].length;
 
@@ -126,17 +130,17 @@ function startCrossfade() {
     }, 200);
 }
 
+// 🔥 Keep volume in sync
+player.addEventListener("volumechange", syncVolume);
+
+// Mode switching
 function setMode(mode) {
     currentList = mode;
     currentTrack = 0;
+    fading = false;
 
-    currentAudio.pause();
     nextAudio.pause();
-
-    currentAudio = new Audio();
     nextAudio = new Audio();
-    currentAudio.volume = 1;
-    nextAudio.volume = 0;
 
     playTrack();
 }
@@ -144,5 +148,6 @@ function setMode(mode) {
 // Start
 playTrack();
 
-</script></body>
+</script>
+</body>
 </html>
