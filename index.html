@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RDP Music System</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #121212;
+    color: white;
+    text-align: center;
+}
+
+h1 {
+    padding: 20px;
+}
+
+button {
+    background: #1db954;
+    border: none;
+    color: white;
+    padding: 15px 25px;
+    margin: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+audio {
+    margin-top: 20px;
+    width: 80%;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🦷 RDP Music System</h1>
+
+<button onclick="setMode('calm')">🦷 Waiting Room</button>
+<button onclick="setMode('neutral')">🛠 Treatment</button>
+<button onclick="setMode('uplift')">☕ Staff</button>
+
+<br><br>
+
+<audio id="player" controls autoplay></audio>
+
+<script>
+
+const basePath = "./calm/";
+
+const playlists = {
+    calm: [
+        "Lifted.mp3",
+        "Used to This.mp3",
+        "84-85.mp3",
+        "Mystical Magical.mp3",
+        "No Time To Talk.mp3",
+        "Tangerine.mp3"
+    ],
+    neutral: [
+        "Lifted.mp3",
+        "Used to This.mp3"
+    ],
+    uplift: [
+        "Tangerine.mp3"
+    ]
+};
+
+let currentList = "calm";
+let currentTrack = 0;
+
+const player = document.getElementById("player");
+
+function playTrack() {
+    player.src = "./" + currentList + "/" + playlists[currentList][currentTrack];
+    player.play();
+}
+
+player.addEventListener("ended", () => {
+    currentTrack = (currentTrack + 1) % playlists[currentList].length;
+    playTrack();
+});
+
+function setMode(mode) {
+    currentList = mode;
+    currentTrack = 0;
+    playTrack();
+}
+
+playTrack();
+
+</script>
+
+</body>
+</html>
