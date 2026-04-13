@@ -118,10 +118,13 @@ function startCrossfade() {
     let fade = 0;
 
     let interval = setInterval(() => {
-        fade += 0.05;
+        fade = Math.min(1, fade + 0.05);
 
-        player.volume = userVolume * (1 - fade);
-        nextAudio.volume = userVolume * fade;
+        const currentVol = Math.max(0, Math.min(1, userVolume * (1 - fade)));
+const nextVol = Math.max(0, Math.min(1, userVolume * fade));
+
+player.volume = currentVol;
+nextAudio.volume = nextVol;
 
         if (fade >= 1) {
             clearInterval(interval);
