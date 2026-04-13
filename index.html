@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>RDP Music System</title>
+<title>RDP Ambient Sounds</title>
 
 <style>
 body {
@@ -36,7 +36,7 @@ audio {
 
 <body>
 
-<h1>🦷 RDP Music System</h1>
+<h1>🦷 RDP Ambient Sounds</h1>
 
 <button onclick="setMode('calm')">🦷 Waiting Room</button>
 <button onclick="setMode('neutral')">🛠 Treatment</button>
@@ -69,15 +69,16 @@ const playlists = {
 let currentList = "calm";
 let currentTrack = 0;
 
-const player = document.getElementById("player");
-
-// 🔥 Preload next track
+let currentAudio = new Audio();
 let nextAudio = new Audio();
 
+currentAudio.volume = 1;
+nextAudio.volume = 0;
+
 function playTrack() {
-    const currentSrc = "./" + currentList + "/" + playlists[currentList][currentTrack];
-    player.src = currentSrc;
-    player.play();
+    const src = "./" + currentList + "/" + playlists[currentList][currentTrack];
+    currentAudio.src = src;
+    currentAudio.play();
 
     preloadNext();
 }
@@ -87,25 +88,61 @@ function preloadNext() {
     nextAudio.src = "./" + currentList + "/" + playlists[currentList][nextIndex];
 }
 
-// 🔥 Instant switch (no delay)
-player.addEventListener("ended", () => {
-    currentTrack = (currentTrack + 1) % playlists[currentList].length;
-
-    player.src = nextAudio.src;
-    player.play();
-
-    preloadNext();
+// 🔥 Crossfade before ending
+currentAudio.addEventListener("timeupdate", () => {
+    if (currentAudio.duration - currentAudio.currentTime < 3) {
+        startCrossfade();
+    }
 });
+
+let fading = false;
+
+function startCrossfade() {
+    if (fading) return;
+    fading = true;
+
+    nextAudio.currentTime = 0;
+    nextAudio.play();
+
+    let fadeInterval = setInterval(() => {
+        currentAudio.volume -= 0.05;
+        nextAudio.volume += 0.05;
+
+        if (currentAudio.volume <= 0) {
+            clearInterval(fadeInterval);
+
+            currentAudio.pause();
+
+            // Swap players
+            currentAudio = nextAudio;
+            nextAudio = new Audio();
+            nextAudio.volume = 0;
+
+            currentTrack = (currentTrack + 1) % playlists[currentList].length;
+
+            preloadNext();
+            fading = false;
+        }
+    }, 200);
+}
 
 function setMode(mode) {
     currentList = mode;
     currentTrack = 0;
+
+    currentAudio.pause();
+    nextAudio.pause();
+
+    currentAudio = new Audio();
+    nextAudio = new Audio();
+    currentAudio.volume = 1;
+    nextAudio.volume = 0;
+
     playTrack();
 }
 
 // Start
 playTrack();
 
-</script>
-</body>
+</script></body>
 </html>
