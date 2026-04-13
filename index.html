@@ -48,8 +48,6 @@ audio {
 
 <script>
 
-const basePath = "./calm/";
-
 const playlists = {
     calm: [
         "Lifted.mp3",
@@ -73,14 +71,30 @@ let currentTrack = 0;
 
 const player = document.getElementById("player");
 
+// 🔥 Preload next track
+let nextAudio = new Audio();
+
 function playTrack() {
-    player.src = "./" + currentList + "/" + playlists[currentList][currentTrack];
+    const currentSrc = "./" + currentList + "/" + playlists[currentList][currentTrack];
+    player.src = currentSrc;
     player.play();
+
+    preloadNext();
 }
 
+function preloadNext() {
+    let nextIndex = (currentTrack + 1) % playlists[currentList].length;
+    nextAudio.src = "./" + currentList + "/" + playlists[currentList][nextIndex];
+}
+
+// 🔥 Instant switch (no delay)
 player.addEventListener("ended", () => {
     currentTrack = (currentTrack + 1) % playlists[currentList].length;
-    playTrack();
+
+    player.src = nextAudio.src;
+    player.play();
+
+    preloadNext();
 });
 
 function setMode(mode) {
@@ -89,9 +103,9 @@ function setMode(mode) {
     playTrack();
 }
 
+// Start
 playTrack();
 
 </script>
-
 </body>
 </html>
