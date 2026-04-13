@@ -1,3 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RDP Ambient Sounds</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #121212;
+    color: white;
+    text-align: center;
+}
+
+h1 {
+    padding: 20px;
+}
+
+button {
+    background: #1db954;
+    border: none;
+    color: white;
+    padding: 15px 25px;
+    margin: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🦷 RDP Ambient Sounds</h1>
+
+<button onclick="setMode('calm')">🦷 Waiting Room</button>
+<button onclick="setMode('neutral')">🛠 Treatment</button>
+<button onclick="setMode('uplift')">☕ Staff</button>
+
+<br><br>
+
+<!-- 🔥 THIS WAS MISSING -->
+<audio id="player" controls autoplay></audio>
+
 <script>
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -25,34 +69,35 @@ let currentTrack = 0;
 
 const player = document.getElementById("player");
 
+if (!player) {
+    console.error("Player not found!");
+    return;
+}
+
 let nextAudio = new Audio();
 let fading = false;
 let userVolume = 1;
 
-// Track volume properly
 player.addEventListener("volumechange", () => {
     userVolume = player.volume;
 });
 
-// Play track
 function playTrack() {
     const src = "./" + currentList + "/" + playlists[currentList][currentTrack];
     player.src = src;
     player.volume = userVolume;
 
-    player.play().catch(() => {}); // avoids autoplay crash
+    player.play().catch(() => {});
 
     preloadNext();
 }
 
-// Preload next
 function preloadNext() {
     let nextIndex = (currentTrack + 1) % playlists[currentList].length;
     nextAudio = new Audio("./" + currentList + "/" + playlists[currentList][nextIndex]);
     nextAudio.volume = 0;
 }
 
-// SAFE crossfade trigger
 player.addEventListener("timeupdate", () => {
     if (
         !fading &&
@@ -64,7 +109,6 @@ player.addEventListener("timeupdate", () => {
     }
 });
 
-// Crossfade
 function startCrossfade() {
     fading = true;
 
@@ -96,7 +140,6 @@ function startCrossfade() {
     }, 200);
 }
 
-// Mode switch
 function setMode(mode) {
     currentList = mode;
     currentTrack = 0;
@@ -106,9 +149,11 @@ function setMode(mode) {
     playTrack();
 }
 
-// Start
 playTrack();
 
 });
 
 </script>
+
+</body>
+</html>
